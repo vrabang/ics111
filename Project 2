@@ -1,0 +1,171 @@
+import java.awt.Color;
+import java.util.ArrayList;
+
+public class MainProgram {
+
+	public static void main(String[] args) {
+
+		int water = 500; // Declare a variable called thirst and assign 500
+		int food = 500; // Declare a variable called hunger and assign 500
+		int fontsize = 30;// declare a variable called fontsize1 and assign 30
+		int fontsize1 = 100;// Declare a variable called fontsize 1 and assign
+							// 100
+		int maxX = 1024; // Declare a variable called maxX and assign 1024
+		int maxY = 768; // Declare a variable called maxY and assign 768
+
+		// Set up EZ graphics
+		EZ.initialize(maxX, maxY); // set up EZ and make a window of the
+									// variable maxX and maxY
+		EZImage background = EZ.addImage("water.jpg", maxX / 2, maxY / 2);
+
+		// sets up the text
+		EZText text = EZ.addText(200, 50, "Water", new Color(255, 255, 255),
+				fontsize);
+		// sets up the text
+		EZText text1 = EZ.addText(200, 100, "Food", new Color(255, 255, 255),
+				fontsize);
+
+		// Load 4 different sound effects
+		EZSound hit = EZ.addSound("hit.wav");
+		EZSound surf = EZ.addSound("surf.wav");
+		EZSound eat = EZ.addSound("chomp.wav");
+		EZSound swoosh = EZ.addSound("swoosh.wav");
+
+		// Make a surfer
+		Surfer mySurferDude = new Surfer();
+
+		/*
+		// Declare a variable called numberOfBottles and assign 5
+		int numberOfBottles = 5;
+		// make an array called waterbottleholder and store the value assigned
+		// in the variable called numberOfBottles
+		WaterBottle[] waterbottleholder = new WaterBottle[numberOfBottles];
+		for (int i = 0; i < numberOfBottles; i++) {
+			waterbottleholder[i] = new WaterBottle();
+		}
+		*/
+		ArrayList<WaterBottle> waterbottle = new ArrayList<WaterBottle>();
+		for (int i = 0; i < 5; i++) {
+			waterbottle.add(new WaterBottle());
+		}
+
+		// Declare a variable called numberOfFood and assign 5
+		// make an array called burger and store the value assigned in the
+		// variable called numberOfFood
+		/*
+		int numberOfFood = 5;
+		Food[] burger = new Food[numberOfFood];
+		for (int i = 0; i < numberOfFood; i++) {
+			burger[i] = new Food();
+		}
+		*/
+		ArrayList<Food> burger = new ArrayList<Food>();
+		for (int i = 0; i < 5; i++) {
+			burger.add(new Food());
+		}
+		
+		// Declare a variable called numberOfObstacles and assign 3
+		// Make an array called obstacle and store the value in the variable
+		// called numberOfObstacles
+		/*
+		int numberOfObstacles = 3;
+		hurricane[] obstacle = new hurricane[numberOfObstacles];
+		for (int i = 0; i < numberOfObstacles; i++) {
+			obstacle[i] = new hurricane("mushroom.png", maxX, maxY);
+		}
+		*/
+		ArrayList<hurricane> obstacle = new ArrayList<hurricane>();
+		for (int i = 0; i < 3; i++) {
+			obstacle.add(new hurricane("mushroom.png", maxX, maxY));
+		}
+		// while food is greater than 0 or water is greater than 0
+		// keep looping but when food or water = 0, stop loop
+		while (water > 0 && food > 0) {
+
+			mySurferDude.move();// call the surfer class and calls the accessor
+								// called move()
+
+			// if I press the w, s, d, and a key, my hunger and thirst will
+			// decrease and play the sound called surf.
+			if (EZInteraction.isKeyDown('w') || EZInteraction.isKeyDown('s')
+					|| EZInteraction.isKeyDown('d')
+					|| EZInteraction.isKeyDown('a')) {
+				food -= 1;
+				water -= 1;
+				surf.play();
+			}
+
+			// Check to see if the surfer touches the water bottle and increase
+			// the water supply and play the sound called eat
+			for (int i = 0; i < waterbottle.size(); i++) {
+				if (waterbottle.get(i).picture.isPointInElement(
+						mySurferDude.x, mySurferDude.y)) {
+					waterbottle.get(i).teleport();
+					water += 20;
+					eat.play();
+				}
+			}
+
+			// Check to see if the surfer touches the burger increase the food
+			// supply and play the sound called eat
+			for (int i = 0; i < burger.size(); i++) {
+				if (burger.get(i).picture.isPointInElement(mySurferDude.x,
+						mySurferDude.y)) {
+					burger.get(i).teleport();
+					food += 20;
+					eat.play();
+				}
+
+			}
+			// Checks to see if the obstacle(hurricane) touches the surfer
+			// decrease the food and water supply
+			// play the sound called hit
+			for (int i = 0; i < obstacle.size(); i++) {
+				obstacle.get(i).move();
+				if ((obstacle.get(i).isInside(mySurferDude.x, mySurferDude.y))) {
+					food -= 5;
+					water -= 5;
+					hit.play();
+				}
+
+			}
+			// Checks if the obstacle touches the food
+			// teleport the food and play the sound called swoosh
+			for (int i = 0; i < 5; i++) {
+				for (int i1 = 0; i1 < 3; i1++) {
+					if ((obstacle.get(i1).isInside(burger.get(i).x, burger.get(i).y))) {
+						burger.get(i).teleport();
+						swoosh.play();
+					}
+				}
+			}
+			// Checks if the obstacle touches the water bottle
+			// teleport the water bottle and play the sound called swoosh
+			for (int i = 0; i < waterbottle.size(); i++) {
+				for (int i1 = 0; i1 < obstacle.size(); i1++) {
+					if ((obstacle.get(i1).isInside(waterbottle.get(i).x,
+							waterbottle.get(i).y))) {
+						waterbottle.get(i).teleport();
+						swoosh.play();
+					}
+				}
+			}
+			// create a water and food supply board
+			text.setMsg("Water: " + water / 5 + "%");
+			text1.setMsg("Food: " + food / 5 + "%");
+
+			EZ.refreshScreen();
+		}
+		// Once the loop stops load the image called screen
+		// and load text2
+		EZImage screen = EZ.addImage("blackscreen.png", 512, 384);
+		//Set up the text and set the font to ARCADECLASSIC
+		EZText text2 = EZ.addText(512, 359, "Game Over", new Color(255, 255,
+				255), fontsize1);
+		text2.setFont("ARCADECLASSIC.TTF");
+		text2.setMsg("Game Over");
+		// load the sound effect
+		EZSound die = EZ.addSound("die.wav");
+		die.play();// play the sound called die
+	}
+}
